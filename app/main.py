@@ -449,6 +449,7 @@ def punch_out(request: PunchOutRequest):
             "$set": {
                 "punch_out": punched_at,
                 "work_hours": compute_work_hours(punch_in_at, punched_at),
+                "half_day": compute_work_hours(punch_in_at, punched_at) < 4.50,
                 "late_minutes": compute_late_minutes(
                     punch_in_at,
                     attendance_date,
@@ -587,7 +588,7 @@ def correct_attendance(
         raise HTTPException(status_code=422, detail="No changes supplied")
 
     employee = db.employees.find_one({"emp_code": emp_code})
-    shift_start, shift_end = shift_bounds(employee, parsed_date)
+    shift_start, shift_end = employee["shift_start"], employee["shift_end"]
 
     update_fields = {
         "status": new_status,
